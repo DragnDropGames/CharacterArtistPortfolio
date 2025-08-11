@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drag-n-Drop - Portfolio</title>
+    <link rel="icon" type="image/png" href="Logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        html {
+            scroll-padding-top: 80px;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            background-color: rgba(10, 10, 10, 0.8);
+            position: relative;
+            z-index: 1;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* Loader Styles */
+        #loader-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0a0a0a;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.75s ease, visibility 0.75s ease;
+        }
+
+        #loader-wrapper.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loader-content {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loader-logo {
+            width: 80px;
+            animation: pulse 2s infinite ease-in-out;
+        }
+
+        .loader-ring {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            border: 3px solid rgba(99, 102, 241, 0.2);
+            border-top-color: #6366f1;
+            border-radius: 50%;
+            animation: spin 1.5s linear infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                filter: drop-shadow(0 0 5px rgba(99, 102, 241, 0.4));
+            }
+            50% {
+                transform: scale(1.05);
+                filter: drop-shadow(0 0 15px rgba(99, 102, 241, 0.8));
+            }
+            100% {
+                transform: scale(0.95);
+                filter: drop-shadow(0 0 5px rgba(99, 102, 241, 0.4));
+            }
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 0.25rem 1.5rem;
+            background: rgba(10, 10, 10, 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        nav.scrolled {
+            background: rgba(10, 10, 10, 0.7);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo img {
+            width: 80px; padding: 0.2rem 0;
+            transition: all 0.3s ease;
+        }
+        
+        .logo img:hover {
+            filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.6));
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            transition: color 0.3s ease;
+            position: relative;
+            font-size: 1.2rem;
+        }
+
+        .nav-links a:hover {
+            color: #6366f1;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #6366f1;
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .hire-btn {
+            background: linear-gradient(45deg, #6366f1, #8b5cf6);
+            color: white;
+            padding: 0.25rem 1.5rem;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .hire-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        /* Section Styles */
+        section {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+            border-top: none; /* No border for the first section */
+        }
+
+        .hero-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .hero-content h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #fff, #6366f1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-content .highlight {
+            color: #f59e0b;
+        }
+
+        .hero-content p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            color: #d1d5db;
+            line-height: 1.6;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            align-items: flex-start; /* Aligns button tops */
+        }
+        
+        /* START: New wrapper for specific button and arrow */
+        .view-portfolio-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Centers arrow under the button */
+        }
+        
+        .scroll-down-arrow-container {
+            margin-top: 1.5rem;
+            cursor: pointer;
+        }
+
+        .scroll-down-arrow {
+            width: 24px;
+            height: 24px;
+            fill: rgba(255, 255, 255, 0.7);
+            animation: bounce 2s infinite ease-in-out;
+            transition: fill 0.3s ease;
+        }
+        
+        .scroll-down-arrow-container:hover .scroll-down-arrow {
+            fill: #fff;
+        }
+
+        .scroll-down-arrow.is-scrolling {
+            animation: stretch-and-fade 0.7s forwards ease-in-out;
+        }
+        /* END: New wrapper styles */
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+        
+        @keyframes stretch-and-fade {
+            0% {
+                transform: scaleY(1);
+                opacity: 0.7;
+            }
+            50% {
+                 transform: scaleY(3);
+                 opacity: 0.5;
+            }
+            100% {
+                transform: scaleY(0.1);
+                opacity: 0;
+            }
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #6366f1, #8b5cf6);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-block;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            padding: 1rem 2rem;
+            border: 2px solid #6366f1;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-block;
+        }
+
+        .btn-secondary:hover {
+            background: #6366f1;
+            transform: translateY(-3px);
+        }
+        
+        .hero-showcase {
+            position: relative;
+            height: 500px;
+            background: linear-gradient(45deg, #1a1a2e, #16213e);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .hero-showcase a {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .showcase-model {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            transition: transform 0.5s ease;
+        }
+
+        .hero-showcase:hover .showcase-model {
+            transform: scale(1.05);
+        }
+
+        /* Portfolio Section */
+        .portfolio {
+            padding: 5rem 2rem;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .portfolio-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .portfolio h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #fff;
+        }
+
+        .portfolio-subtitle {
+            font-size: 1.1rem;
+            color: #9ca3af;
+            margin-bottom: 3rem;
+        }
+
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .portfolio-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .portfolio-item:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .portfolio-image {
+            width: 100%;
+            height: 250px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .portfolio-content {
+            padding: 1.5rem;
+            text-align: left;
+        }
+
+        .portfolio-content h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+
+        .portfolio-content p {
+            color: #9ca3af;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .view-btn {
+            background: linear-gradient(45deg, #6366f1, #8b5cf6);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-block;
+            width: 100%;
+            text-align: center;
+        }
+
+        .view-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        /* Shared Section Styles (used by Contact) */
+        .viewer-section {
+            padding: 5rem 2rem;
+        }
+
+        .viewer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .viewer-section h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #fff;
+        }
+
+        .viewer-section p {
+            font-size: 1.1rem;
+            color: #e5e7eb;
+            margin-bottom: 3rem;
+        }
+
+        /* NEW: Contact Form Styles */
+        #contact-form-container {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.7s ease-in-out, margin-top 0.7s ease-in-out;
+            margin-top: 0;
+        }
+        #contact-form-container.visible {
+            max-height: 600px; /* Adjust if form is taller */
+            margin-top: 3rem;
+        }
+        
+        .email-display-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 10px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .email-display-container p {
+            margin: 0;
+            color: #e5e7eb;
+            font-size: 1.1rem;
+        }
+
+        .btn-copy {
+            background: transparent;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: 1px solid #6366f1;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-family: 'Rajdhani', sans-serif;
+        }
+
+        .btn-copy:hover {
+            background: #6366f1;
+        }
+        
+        #contact-form {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2rem;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            text-align: left;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #d1d5db;
+        }
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.2);
+            color: #fff;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+        }
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        #submit-btn {
+            width: 100%;
+            padding: 1rem 2rem;
+        }
+
+
+        /* Footer */
+        footer {
+            background: transparent;
+            padding: 4rem 2rem 2rem;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .footer-bottom {
+            border-top: 1px solid #374151;
+            padding-top: 2rem;
+            color: #d1d5db;
+        }
+        
+        .footer-disclaimer {
+            font-size: 0.8rem;
+            color: #d1d5db;
+        }
+
+        .back-to-top-logo {
+            display: inline-block;
+            margin-bottom: 4rem; /* Increased margin for more space */
+        }
+        .back-to-top-logo img {
+            width: 60px;
+            transition: all 0.3s ease;
+        }
+        .back-to-top-logo:hover img {
+            filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.6));
+            transform: scale(1.1);
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: #1a1a2e;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 900px;
+            border-radius: 15px;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .close-btn {
+            color: #aaa;
+            position: absolute;
+            top: 10px;
+            right: 25px;
+            font-size: 35px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 15;
+        }
+
+        .close-btn:hover,
+        .close-btn:focus {
+            color: #fff;
+            text-decoration: none;
+        }
+        
+        #modal-title {
+            margin-top: 1rem;
+            font-size: 2rem;
+        }
+        
+        #modal-description {
+            margin-top: 1rem;
+            color: #d1d5db;
+            line-height: 1.6;
+        }
+
+        #modal-description a {
+            color: #8b5cf6;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        #modal-description a:hover {
+            color: #a78bfa;
+            text-decoration: underline;
+        }
+
+        #modal-gallery-container {
+            position: relative;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+        
+        #modal-gallery-content {
+            margin: 0 auto;
+            transition: max-width 0.35s ease-in-out;
+        }
+
+        #modal-gallery-content .modal-slide {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+            position: relative;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        #modal-gallery-content .modal-slide {
+            background-color: transparent;
+        }
+
+        #modal-gallery-content .modal-slide:fullscreen {
+            background-color: #000;
+        }
+        
+        #modal-gallery-content .modal-slide img,
+        #modal-gallery-content .modal-slide video {
+            width: 100%;
+            height: auto;
+            max-height: 70vh;
+            object-fit: contain; 
+            border-radius: 10px;
+            background-color: transparent;
+        }
+        
+        #modal-gallery-content .modal-slide:fullscreen img,
+        #modal-gallery-content .modal-slide:fullscreen video {
+            max-height: 100vh;
+            border-radius: 0;
+        }
+
+        /* START: YouTube Embed Styles */
+        .youtube-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            height: 0;
+            overflow: hidden;
+            width: 100%;
+            background: #000;
+            border-radius: 10px;
+        }
+
+        .youtube-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+        /* END: YouTube Embed Styles */
+
+        .prev-btn, .next-btn {
+            cursor: pointer;
+            position: absolute;
+            top: 50%;
+            width: auto;
+            padding: 16px;
+            margin-top: -30px;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+            transition: 0.6s ease;
+            border-radius: 0 3px 3px 0;
+            user-select: none;
+            background-color: rgba(0,0,0,0.3);
+            z-index: 10;
+        }
+
+        .next-btn {
+            right: 0;
+            border-radius: 3px 0 0 3px;
+        }
+
+        .prev-btn:hover, .next-btn:hover {
+            background-color: rgba(0,0,0,0.8);
+        }
+
+        .fullscreen-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0,0,0,0.4);
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            cursor: pointer;
+            z-index: 10;
+            transition: background-color 0.3s ease;
+        }
+
+        .fullscreen-btn:hover {
+            background: rgba(0,0,0,0.7);
+        }
+
+        .fullscreen-btn svg {
+            width: 22px;
+            height: 22px;
+            fill: white;
+            display: block;
+        }
+
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero-container {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            
+            .hero-content {
+                align-items: center; /* Center content on mobile */
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+            }
+        }
+
+        /* Scroll animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <!-- Loader -->
+    <div id="loader-wrapper">
+        <div class="loader-content">
+            <img src="Logo.png" alt="Loading..." class="loader-logo">
+            <div class="loader-ring"></div>
+        </div>
+    </div>
+
+    <canvas id="bg-animation" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:0;"></canvas>
+    <!-- Navigation -->
+    <nav id="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <a href="#home"><img src="Logo.png" alt="SyntheticPolygons Logo"></a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#portfolio">Portfolio</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+            <a href="#contact" class="hire-btn">Hire Me</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-container">
+            <div class="hero-content fade-in">
+                <h1>Bring Your Game Characters <span class="highlight">to Life</span></h1>
+                <p>Specialized in creating game-ready characters, from humans to creatures and clothing. Successfully delivering in both stylized and realistic characters in some of the most interesting and detailed game worlds. Consistent quality and productivity defines my work.</p>
+                
+                <div class="hero-buttons">
+                    <!-- START: New wrapper for button and arrow -->
+                    <div class="view-portfolio-wrapper">
+                        <a href="#portfolio" id="view-portfolio-btn" class="btn-primary">View Portfolio</a>
+                        <div class="scroll-down-arrow-container">
+                            <svg id="scroll-arrow" class="scroll-down-arrow" viewBox="0 0 24 14" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M2.2,0.2C1.5-0.5,0.4,0,0.5,0.9l11,12.5C11.8,13.8,12.2,13.8,12.5,13.4l11-12.5c0.8-0.9-0.2-1.4-0.9-0.9L12,11.2L2.2,0.2z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <!-- END: New wrapper -->
+                    <a href="#contact" class="btn-secondary">Contact</a>
+                </div>
+
+            </div>
+            <div class="hero-showcase fade-in">
+                <a href="#portfolio" id="hero-gallery-link">
+                    <img src="Hero/farmer-hero.png" alt="Realistic Farmer Character" class="showcase-model">
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Portfolio Section -->
+    <section class="portfolio" id="portfolio">
+        <div class="portfolio-container">
+            <h2 class="fade-in">Portfolio Gallery</h2>
+            <p class="portfolio-subtitle fade-in">Explore my latest character designs and game-ready 3D models.</p>
+            
+            <div class="portfolio-grid">
+                <div class="portfolio-item fade-in"
+                     data-title="Stylized Adventurer &amp; Companion"
+                     data-description="With this project my aim was to strengthen my workflow for making characters that look good in Unreal Engine. She is optimized with clean game-ready geometry that is perfect for animation. Used mixamo to pose the character. No basemesh was used for the highpoly and the materials were made from scratch in Substance Painter for this study."
+                     data-gallery='[
+                        {"type": "image", "src": "Stylized Adventurer & Companion/POSE1.0000.png"},
+                        {"type": "image", "src": "Stylized Adventurer & Companion/POSE2.0000.png"},
+                        {"type": "video", "src": "Stylized Adventurer & Companion/TURNTABLE_Bake.0000.mp4"},
+                        {"type": "video", "src": "Stylized Adventurer & Companion/TURNTABLE_AposeScene3.0000.mp4"},
+                        {"type": "video", "src": "Stylized Adventurer & Companion/TURNTABLE_Aposewireframe.0000.mp4"},
+                        {"type": "image", "src": "Stylized Adventurer & Companion/Stylized_Girl_HQRender1.0000bHD.png"},
+                        {"type": "video", "src": "Stylized Adventurer & Companion/TURNTABLE_Bird1.0000.mp4"},
+                        {"type": "video", "src": "Stylized Adventurer & Companion/TURNTABLE_Bird1wireframe.0000.mp4"},
+                        {"type": "video", "src": "Stylized Adventurer & Companion/Unreal_camera.mp4"},
+                        {"type": "image", "src": "Stylized Adventurer & Companion/Highpoly1.jpg"},
+                        {"type": "image", "src": "Stylized Adventurer & Companion/Highpoly2.jpg"},
+                        {"type": "image", "src": "Stylized Adventurer & Companion/Highpoly3.jpg"}
+                     ]'>
+                    <div class="portfolio-image" style="background-image: url('Stylized Adventurer & Companion/CLOSEUP.0000.png');"></div>
+                    <div class="portfolio-content">
+                        <h3>Stylized Adventurer &amp; Companion</h3>
+                        <p>A stylized girl and her yellow friend. Created with standard highpoly to lowpoly workflow for Unreal Engine.</p>
+                        <button class="view-btn">View Project</button>
+                    </div>
+                </div>
+                
+                <div class="portfolio-item fade-in" id="portfolio-item-2"
+                     data-title="Realistic Farmer"
+                     data-description="A study of a realistic farmer game character, rendered in Unreal Engine. For this project my focus was on skin detail and haircards. Initially he was meant as a basemesh study for another character but later became this farmer background character for next-gen games.  He is someone the game's hero can buy from if he is too far from a town and needs something fresh to keep traveling.<br><br>Basemesh anatomy was sculpted from scratch and 3dscanstore.com height map was used for the skin detail. MetaHuman skin shader and eyeballs were used and tweaked for this character. For the hair I used Fibershop textures and the Paragon free character’s hair shader. The clothes were made with Marvelous Designer and textured in Substance Painter."
+                     data-gallery='[
+                        {"type": "image", "src": "Realistic Farmer/1.png"},
+                        {"type": "image", "src": "Realistic Farmer/2.png"},
+                        {"type": "image", "src": "Realistic Farmer/3.png"},
+                        {"type": "image", "src": "Realistic Farmer/4.png"},
+                        {"type": "image", "src": "Realistic Farmer/5.png"},
+                        {"type": "video", "src": "Realistic Farmer/6.mp4"},
+                        {"type": "image", "src": "Realistic Farmer/7.png"},
+                        {"type": "image", "src": "Realistic Farmer/8.png"},
+                        {"type": "image", "src": "Realistic Farmer/9.png"},
+                        {"type": "image", "src": "Realistic Farmer/10.png"},
+                        {"type": "image", "src": "Realistic Farmer/11.png"},
+                        {"type": "image", "src": "Realistic Farmer/12.png"},
+                        {"type": "image", "src": "Realistic Farmer/13.png"},
+                        {"type": "image", "src": "Realistic Farmer/14.png"},
+                        {"type": "image", "src": "Realistic Farmer/15.png"},
+                        {"type": "image", "src": "Realistic Farmer/16.png"},
+                        {"type": "image", "src": "Realistic Farmer/17.png"},
+                        {"type": "image", "src": "Realistic Farmer/18.png"},
+                        {"type": "image", "src": "Realistic Farmer/19.png"},
+                        {"type": "image", "src": "Realistic Farmer/20.png"},
+                        {"type": "video", "src": "Realistic Farmer/21.mp4"}
+                     ]'>
+                    <div class="portfolio-image" style="background-image: url('Realistic Farmer/0.png');"></div>
+                    <div class="portfolio-content">
+                        <h3>Realistic Farmer</h3>
+                        <p>A realistic farmer character study focused on skin detail and haircards, rendered in Unreal Engine.</p>
+                        <button class="view-btn">View Project</button>
+                    </div>
+                </div>
+                
+                <div class="portfolio-item fade-in"
+                     data-title="Stylized Trainer & Monkey"
+                     data-description="An experienced trainer and her loyal monkey companion. From design to UE5 render, this project features a faster version of the same workflow used in my previous stylized girl design. Maintaining the same fidelity and game-ready geometry. This character not only allows me to design a more interesting pet, but its simpler design fits her Pokemon fan art inspired theme better. While my focus for this one was making a character “skin-like” workflow, for faster characters using a pre-made basemesh, I was also focusing on design for this project."
+                     data-gallery='[
+                        {"type": "image", "src": "Stylized Scout & Monkey/1.png"},
+                        {"type": "image", "src": "Stylized Scout & Monkey/2.png"},
+                        {"type": "image", "src": "Stylized Scout & Monkey/3.png"},
+                        {"type": "video", "src": "Stylized Scout & Monkey/4.mp4"},
+                        {"type": "image", "src": "Stylized Scout & Monkey/5.png"},
+                        {"type": "image", "src": "Stylized Scout & Monkey/6.png"},
+                        {"type": "image", "src": "Stylized Scout & Monkey/7.png"},
+                        {"type": "video", "src": "Stylized Scout & Monkey/8.mp4"},
+                        {"type": "video", "src": "Stylized Scout & Monkey/9.mp4"},
+                        {"type": "video", "src": "Stylized Scout & Monkey/9a.mp4"},
+                        {"type": "video", "src": "Stylized Scout & Monkey/9b.mp4"},
+                        {"type": "image", "src": "Stylized Scout & Monkey/10.png"},
+                        {"type": "image", "src": "Stylized Scout & Monkey/11.png"},
+                        {"type": "image", "src": "Stylized Scout & Monkey/12.png"},
+                        {"type": "image", "src": "Stylized Scout & Monkey/13.jpg"},
+                        {"type": "image", "src": "Stylized Scout & Monkey/14.jpg"}
+                     ]'>
+                    <div class="portfolio-image" style="background-image: url('Stylized Scout & Monkey/0.png');"></div>
+                    <div class="portfolio-content">
+                        <h3>Stylized Trainer & Monkey</h3>
+                        <p>A wise young trainer and her loyal monkey companion, featuring a Pokemon fan art theme and a character skin workflow</p>
+                        <button class="view-btn">View Project</button>
+                    </div>
+                </div>
+                
+                <div class="portfolio-item fade-in"
+                     data-title="Scarface"
+                     data-description="A likeness study of Al Pacino in Scarface. With this character I moved from using Marmoset Toolbag for rendering my old characters to using Unreal Engine for all projects in this portfolio.<br>I extracted the Metahuman skin shader and eyeballs for this render in the early versions of Unreal Engine 5. He was sculpted from a sphere using photo reference from the movie for likeness. The high frequency detail in the highpoly was projected from a 3dscanstore.com height map. His shirt was made using Marvelous Designer. The haircard textures were created with Fibershop. This character was inspired by gta NPCs and next gen open-world action games."
+                     data-gallery='[
+                        {"type": "image", "src": "Scarface/1.png"},
+                        {"type": "image", "src": "Scarface/2.png"},
+                        {"type": "image", "src": "Scarface/3.png"},
+                        {"type": "image", "src": "Scarface/4.png"},
+                        {"type": "image", "src": "Scarface/5.png"},
+                        {"type": "image", "src": "Scarface/6.png"},
+                        {"type": "image", "src": "Scarface/7.png"},
+                        {"type": "video", "src": "Scarface/8.mp4"},
+                        {"type": "image", "src": "Scarface/9.png"},
+                        {"type": "image", "src": "Scarface/10.png"}
+                     ]'>
+                    <div class="portfolio-image" style="background-image: url('Scarface/0.png');"></div>
+                    <div class="portfolio-content">
+                        <h3>Scarface</h3>
+                        <p>A battle-hardened gangster. A character study with a focus on likeness and realistic game-ready characters.</p>
+                        <button class="view-btn">View Project</button>
+                    </div>
+                </div>
+                
+                <div class="portfolio-item fade-in"
+                     data-title="Scan Clean-Up Workflow"
+                     data-description="I used to do the projection manually but the beginning of the clean up process could be faster by using R3DS Wrap.<br><br>I used the Head RAW Scan Sample by Digital Reality because its really good quality but its the same workflow for any scanned head<br><a href='https://www.digitalrealitylab.com/sample-model/' target='_blank'>https://www.digitalrealitylab.com/sample-model/</a><br><br>For the texture I used HD Male 3D Head Model 11's Displacement and Albedo map. And for the geometry basemesh I projected the scan into the free basemesh by 3dscanstore.com (links below).<br><a href='https://www.3dscanstore.com/hd-head-scans/hd-head-models/hd-male-head-model-011' target='_blank'>https://www.3dscanstore.com/hd-head-scans/hd-head-models/hd-male-head-model-011</a><br><a href='https://www.3dscanstore.com/blog/Free-Base-Mesh' target='_blank'>https://www.3dscanstore.com/blog/Free-Base-Mesh</a><br><br>Metahuman skin shader and eyeballs were used for this character.<br><br>Timelapse video of the clean-up process in zbrush at the end, with about 10 hours of work in 2 minutes."
+                     data-gallery='[
+                        {"type": "image", "src": "Scan Clean-Up/1.png"},
+                        {"type": "image", "src": "Scan Clean-Up/2.png"},
+                        {"type": "image", "src": "Scan Clean-Up/3.png"},
+                        {"type": "youtube", "src": "https://www.youtube.com/embed/H6eip8D4j-I?si=aRa7MdAXTbo28f4u&autoplay=1&mute=1"}
+                     ]'>
+                    <div class="portfolio-image" style="background-image: url('Scan Clean-Up/0.png');"></div>
+                    <div class="portfolio-content">
+                        <h3>Scan Clean-Up Workflow</h3>
+                        <p>Transforming a raw 3D scan into a clean, retopologized, and production-ready character asset.</p>
+                        <button class="view-btn">View Project</button>
+                    </div>
+                </div>
+                
+                <div class="portfolio-item fade-in"
+                     data-title="Gibson Game-ready Guitar"
+                     data-description="A Hard-surface game-ready guitar modeled with Maya and textured with Substance Painter. Rendered in Unreal Engine."
+                     data-gallery='[
+                        {"type": "video", "src": "Guitar Game-Ready/1.mp4"},
+                        {"type": "image", "src": "Guitar Game-Ready/2.png"},
+                        {"type": "video", "src": "Guitar Game-Ready/3.mp4"},
+                        {"type": "image", "src": "Guitar Game-Ready/4.png"},
+                        {"type": "image", "src": "Guitar Game-Ready/5.png"},
+                        {"type": "image", "src": "Guitar Game-Ready/6.png"},
+                        {"type": "image", "src": "Guitar Game-Ready/7.png"},
+                        {"type": "image", "src": "Guitar Game-Ready/8.png"}
+                     ]'>
+                    <div class="portfolio-image" style="background-image: url('Guitar Game-Ready/0.png');"></div>
+                    <div class="portfolio-content">
+                        <h3>Gibson Game-ready Guitar</h3>
+                        <p>A game-ready electric guitar model rendered in Unreal.</p>
+                        <button class="view-btn">View Project</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="portfolio" id="about" style="background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);">
+        <div class="portfolio-container">
+            <h2 class="fade-in">About Me</h2>
+            <p class="portfolio-subtitle fade-in">From highpoly sculpting to game engine integration, I deliver successful character models for high profile clients and indie game studios.</p>
+            <div class="portfolio-grid">
+                <div class="portfolio-item fade-in">
+                    <div class="portfolio-content">
+                        <h3>Character Art Workflow</h3>
+                        <p>Proficient with standard workflows with more than 5+ years of experience under my belt. Using tools like ZBrush, Blender, Maya, Substance Painter, and Unreal Engine. My characters are optimized with clean topology, efficient UVs — ready for integration into real-time engines.</p>
+                    </div>
+                </div>
+                <div class="portfolio-item fade-in">
+                    <div class="portfolio-content">
+                        <h3>Current-Gen</h3>
+                        <p>Up to date with the new workflows and tools in the game industry. From scan clean-up to Unreal MetaHumans, etc. Constantly keeping up with the best tools in the market.</p>
+                    </div>
+                </div>
+                <div class="portfolio-item fade-in">
+                    <div class="portfolio-content">
+                        <h3>Consistency and Hard-work</h3>
+                        <p>I have worked on a variety of game projects, filling those worlds with interesting 3d characters that fit their games.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="viewer-section" id="contact" style="background: #0a0a0a; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+        <div class="viewer-container">
+            <h2 class="fade-in">Ready to create your next hero or villain?</h2>
+            <p class="fade-in">Let's work together to bring your character concepts to life with detail and personality.</p>
+
+            <div class="hero-buttons fade-in" style="justify-content: center; margin-top: 2rem;">
+                <a href="javascript:void(0);" id="get-in-touch-btn" class="btn-primary">Get in Touch</a>
+                <a href="Resume.pdf" class="btn-secondary" download="Resume.pdf">Download Resume</a>
+            </div>
+            
+            <div id="contact-form-container" class="fade-in">
+                <div class="email-display-container">
+                    <p>My Email: <span id="email-address">dalobo91@gmail.com</span></p>
+                    <button id="copy-email-btn" class="btn-copy">Copy Email</button>
+                </div>
+                <form id="contact-form" action="https://formspree.io/f/xyzpgrlj" method="POST">
+                    <div class="form-group">
+                        <label for="name">Name</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Your Email</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Message</label>
+                        <textarea id="message" name="message" required></textarea>
+                    </div>
+                    <button type="submit" id="submit-btn" class="btn-primary">Send Message</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-container">
+             <a href="#home" class="back-to-top-logo">
+                <img src="Logo.png" alt="Back to top">
+            </a>
+            <div class="footer-bottom">
+                <p class="footer-disclaimer">All work being displayed in this page including design is made with industry standard tools by David Lobo unless explicitly mentioned</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modal -->
+    <div id="portfolio-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <div id="modal-gallery-container">
+                <div id="modal-gallery-content">
+                    <!-- Slides will be injected here by JS -->
+                </div>
+                <a class="prev-btn">&#10094;</a>
+                <a class="next-btn">&#10095;</a>
+            </div>
+            <h2 id="modal-title"></h2>
+            <p id="modal-description"></p>
+        </div>
+    </div>
+
+    <script>
+        // --- START OF LOADER SCRIPT ---
+        const startTime = Date.now();
+
+        window.addEventListener('load', () => {
+            const loaderWrapper = document.getElementById('loader-wrapper');
+            const minLoadTime = 1000; // Minimum 1 second
+            const elapsedTime = Date.now() - startTime;
+            const remainingTime = Math.max(0, minLoadTime - elapsedTime);
+
+            setTimeout(() => {
+                if(loaderWrapper) {
+                    loaderWrapper.classList.add('hidden');
+                }
+            }, remainingTime);
+        });
+        // --- END OF LOADER SCRIPT ---
+    </script>
+    
+    <script>
+        // --- START OF DYNAMIC TEXT LOADER ---
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('[data-text-source]').forEach(element => {
+                const sourceFile = element.getAttribute('data-text-source');
+                if (sourceFile) {
+                    fetch(sourceFile)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`Network response was not ok for ${sourceFile}`);
+                            }
+                            return response.text();
+                        })
+                        .then(text => {
+                            element.innerHTML = text.trim();
+                        })
+                        .catch(error => {
+                            console.error(`Error loading text from ${sourceFile}:`, error);
+                            element.textContent = `[Content from ${sourceFile} could not be loaded]`;
+                        });
+                }
+            });
+        });
+        // --- END OF DYNAMIC TEXT LOADER ---
+    </script>
+
+    <script>
+        // Navbar scroll effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Scroll animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+        document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+        // --- START OF MODAL AND FORM HANDLING SCRIPT ---
+        const modal = document.getElementById('portfolio-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalDescription = document.getElementById('modal-description');
+        const modalGalleryContent = document.getElementById('modal-gallery-content');
+        const closeBtn = document.querySelector('.close-btn');
+        const prevBtn = document.querySelector('.prev-btn');
+        const nextBtn = document.querySelector('.next-btn');
+        
+        const fullscreenEnterSVG = `<svg viewBox="0 0 24 24"><path d="M15 3h6v6h-2V5h-4V3zM9 3v2H5v4H3V3h6zm6 18v-2h4v-4h2v6h-6zm-6 0H3v-6h2v4h4v2z"/></svg>`;
+        const fullscreenExitSVG = `<svg viewBox="0 0 24 24"><path d="M3 9h6V3h2v8H3V9zm12 0h6V3h-2v4h-4v2zM3 15h8v6H9v-4H3v-2zm12 0h6v6h-2v-4h-4v-2z"/></svg>`;
+
+        let currentSlideIndex = 0;
+        let slides = [];
+        
+        function toggleFullscreen(element) {
+            if (!document.fullscreenElement) {
+                if (element.requestFullscreen) { element.requestFullscreen(); }
+            } else {
+                if (document.exitFullscreen) { document.exitFullscreen(); }
+            }
+        }
+        
+        function resizeGalleryContainer(mediaElement) {
+            const container = document.getElementById('modal-gallery-content');
+            if (!mediaElement) {
+                container.style.maxWidth = '100%';
+                return;
+            };
+            const naturalWidth = mediaElement.naturalWidth || mediaElement.videoWidth;
+            const naturalHeight = mediaElement.naturalHeight || mediaElement.videoHeight;
+            if (!naturalWidth || !naturalHeight) return;
+            const aspectRatio = naturalWidth / naturalHeight;
+            const modalContent = document.querySelector('.modal-content');
+            const padding = parseFloat(getComputedStyle(modalContent).paddingLeft) + parseFloat(getComputedStyle(modalContent).paddingRight);
+            const maxDisplayWidth = modalContent.clientWidth - padding;
+            const maxDisplayHeight = window.innerHeight * 0.7;
+            let displayWidth = maxDisplayWidth;
+            let displayHeight = displayWidth / aspectRatio;
+            if (displayHeight > maxDisplayHeight) {
+                displayHeight = maxDisplayHeight;
+                displayWidth = displayHeight * aspectRatio;
+            }
+            container.style.maxWidth = `${displayWidth}px`;
+        }
+
+        function showSlide(index) {
+            if (!slides || slides.length === 0) return;
+            
+            slides.forEach(slide => {
+                slide.style.display = 'none';
+                const video = slide.querySelector('video');
+                if (video) { video.pause(); video.currentTime = 0; }
+                
+                const iframe = slide.querySelector('iframe');
+                if (iframe) {
+                    if (!iframe.dataset.src) iframe.dataset.src = iframe.src;
+                    iframe.src = '';
+                }
+            });
+
+            currentSlideIndex = (index + slides.length) % slides.length;
+            const currentSlide = slides[currentSlideIndex];
+
+            if (currentSlide) {
+                const mediaElement = currentSlide.querySelector('img, video');
+                if (mediaElement) {
+                    if ((mediaElement.tagName === 'IMG' && mediaElement.complete) || (mediaElement.tagName === 'VIDEO' && mediaElement.readyState > 0)) {
+                        resizeGalleryContainer(mediaElement);
+                    } else {
+                        const eventType = mediaElement.tagName === 'IMG' ? 'onload' : 'onloadedmetadata';
+                        mediaElement[eventType] = () => resizeGalleryContainer(mediaElement);
+                    }
+                } else {
+                    resizeGalleryContainer(null);
+                }
+
+                currentSlide.style.display = 'block';
+
+                const videoToPlay = currentSlide.querySelector('video');
+                if (videoToPlay) {
+                    videoToPlay.play().catch(e => console.error("Autoplay was prevented:", e));
+                }
+                const iframeToPlay = currentSlide.querySelector('iframe');
+                if (iframeToPlay && iframeToPlay.dataset.src) {
+                    iframeToPlay.src = iframeToPlay.dataset.src;
+                }
+            }
+        }
+        
+        function openModalWith(item) {
+            modalTitle.textContent = item.dataset.title;
+            modalDescription.innerHTML = item.dataset.description; // Use .innerHTML to render HTML tags
+            modalGalleryContent.innerHTML = '';
+            slides = [];
+            const galleryDataStr = item.dataset.gallery;
+            if (galleryDataStr) {
+                try {
+                    const galleryData = JSON.parse(galleryDataStr);
+                    galleryData.forEach(media => {
+                        const slideDiv = document.createElement('div');
+                        slideDiv.className = 'modal-slide';
+                        
+                        if (media.type === 'youtube') {
+                            const youtubeContainer = document.createElement('div');
+                            youtubeContainer.className = 'youtube-container';
+                            const iframe = document.createElement('iframe');
+                            iframe.src = media.src;
+                            iframe.title = "YouTube video player";
+                            iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+                            iframe.setAttribute('allowfullscreen', '');
+                            youtubeContainer.appendChild(iframe);
+                            slideDiv.appendChild(youtubeContainer);
+                        } else {
+                            let mediaElement;
+                            if (media.type === 'video') {
+                                mediaElement = document.createElement('video');
+                                mediaElement.src = media.src;
+                                mediaElement.controls = true; mediaElement.muted = true; mediaElement.loop = true; mediaElement.setAttribute('playsinline', '');
+                            } else {
+                                mediaElement = document.createElement('img');
+                                mediaElement.src = media.src; mediaElement.alt = item.dataset.title;
+                            }
+                            slideDiv.appendChild(mediaElement);
+                        }
+
+                        const fullscreenBtn = document.createElement('button');
+                        fullscreenBtn.className = 'fullscreen-btn';
+                        fullscreenBtn.title = 'Toggle Fullscreen';
+                        fullscreenBtn.innerHTML = fullscreenEnterSVG;
+                        slideDiv.appendChild(fullscreenBtn);
+                        modalGalleryContent.appendChild(slideDiv);
+                        slides.push(slideDiv);
+                    });
+                    prevBtn.style.display = slides.length > 1 ? 'block' : 'none';
+                    nextBtn.style.display = slides.length > 1 ? 'block' : 'none';
+                    showSlide(0);
+                } catch(e) {
+                    console.error("Error parsing gallery data: ", e);
+                    modalGalleryContent.innerHTML = '<p>Error loading gallery.</p>';
+                }
+            }
+            modal.style.display = 'block';
+        }
+
+        function closeModal() {
+            if (document.fullscreenElement) { document.exitFullscreen(); }
+            modal.style.display = 'none';
+            const currentSlide = slides[currentSlideIndex];
+            if (currentSlide) {
+                const video = currentSlide.querySelector('video');
+                if (video) video.pause();
+                const iframe = currentSlide.querySelector('iframe');
+                if (iframe) iframe.src = '';
+            }
+            resizeGalleryContainer(null);
+        }
+
+        const getInTouchBtn = document.getElementById('get-in-touch-btn');
+        const formContainer = document.getElementById('contact-form-container');
+        if (getInTouchBtn && formContainer) {
+            getInTouchBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                formContainer.classList.toggle('visible');
+            });
+        }
+        
+        const copyEmailBtn = document.getElementById('copy-email-btn');
+        if (copyEmailBtn) {
+            copyEmailBtn.addEventListener('click', () => {
+                const emailAddress = 'dalobo91@gmail.com';
+                navigator.clipboard.writeText(emailAddress).then(() => {
+                    const originalText = copyEmailBtn.textContent;
+                    copyEmailBtn.textContent = 'Copied!';
+                    setTimeout(() => {
+                        copyEmailBtn.textContent = originalText;
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Failed to copy email: ', err);
+                });
+            });
+        }
+        
+        // START: Scroll Arrow Logic
+        const viewPortfolioBtn = document.getElementById('view-portfolio-btn');
+        const scrollArrowContainer = document.querySelector('.scroll-down-arrow-container');
+        const scrollArrow = document.getElementById('scroll-arrow');
+
+        function triggerScroll() {
+            const targetId = viewPortfolioBtn.getAttribute('href');
+            const targetElement = document.querySelector(targetId);
+            if (targetElement) {
+                scrollArrow.classList.add('is-scrolling');
+                targetElement.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        if(viewPortfolioBtn && scrollArrowContainer && scrollArrow) {
+            viewPortfolioBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                triggerScroll();
+            });
+            scrollArrowContainer.addEventListener('click', triggerScroll);
+
+            scrollArrow.addEventListener('animationend', () => {
+                if(scrollArrow.classList.contains('is-scrolling')) {
+                    scrollArrow.classList.remove('is-scrolling');
+                }
+            });
+        }
+        // END: Scroll Arrow Logic
+
+        document.addEventListener('click', function(e) {
+            const anchor = e.target.closest('a[href^="#"]');
+            
+            if (anchor && anchor.id === 'hero-gallery-link') {
+                e.preventDefault();
+                const portfolioSection = document.getElementById('portfolio');
+                if (!portfolioSection) return;
+                const scrollObserver = new IntersectionObserver((entries) => {
+                    if (entries[0].isIntersecting) {
+                        const targetItem = document.getElementById('portfolio-item-2');
+                        if (targetItem) openModalWith(targetItem);
+                        scrollObserver.disconnect();
+                    }
+                }, { threshold: 0.1 });
+                scrollObserver.observe(portfolioSection);
+                portfolioSection.scrollIntoView({ behavior: 'smooth' });
+                return;
+            }
+            
+            if (anchor && anchor.id !== 'view-portfolio-btn' && anchor.id !== 'get-in-touch-btn' && anchor.id !== 'hero-gallery-link') {
+                 e.preventDefault();
+                 const targetElement = document.querySelector(anchor.getAttribute('href'));
+                 if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: 'smooth' });
+                 }
+                 return;
+            }
+
+            if (e.target.classList.contains('view-btn')) {
+                const item = e.target.closest('.portfolio-item');
+                if (item) openModalWith(item);
+                return;
+            }
+        });
+        
+        modalGalleryContent.addEventListener('click', function(e) {
+            const fullscreenBtn = e.target.closest('.fullscreen-btn');
+            if (fullscreenBtn) {
+                const slide = fullscreenBtn.closest('.modal-slide');
+                if (slide) { toggleFullscreen(slide); }
+            }
+        });
+        
+        document.addEventListener('fullscreenchange', () => {
+            const btnInFullscreen = document.fullscreenElement?.querySelector('.fullscreen-btn');
+            if (btnInFullscreen) {
+                btnInFullscreen.innerHTML = fullscreenExitSVG;
+            } else {
+                const currentSlideBtn = slides[currentSlideIndex]?.querySelector('.fullscreen-btn');
+                if (currentSlideBtn) { currentSlideBtn.innerHTML = fullscreenEnterSVG; }
+            }
+        });
+
+        closeBtn.addEventListener('click', closeModal);
+        window.addEventListener('click', (event) => { if (event.target == modal) closeModal(); });
+        document.addEventListener('keydown', (event) => {
+            if (modal.style.display === 'block') {
+                if (document.fullscreenElement) return;
+                if (event.key === 'ArrowLeft') showSlide(currentSlideIndex - 1);
+                else if (event.key === 'ArrowRight') showSlide(currentSlideIndex + 1);
+                else if (event.key === 'Escape') closeModal();
+            }
+        });
+        
+        prevBtn.addEventListener('click', () => showSlide(currentSlideIndex - 1));
+        nextBtn.addEventListener('click', () => showSlide(currentSlideIndex + 1));
+        // --- END OF MODAL AND FORM HANDLING SCRIPT ---
+    </script>
+
+<script>
+// --- START OF COSMIC FIELD SCRIPT ---
+const canvas = document.getElementById('bg-animation');
+const ctx = canvas.getContext('2d');
+const PARTICLE_COUNT = 800;
+const MAX_DEPTH = 32;
+const SPEED = 0.05;
+const MOUSE_INFLUENCE = 0.05;
+const PARTICLE_COLOR = '99, 102, 241';
+let particles = [];
+let mouse = { x: 0, y: 0 };
+let centerX, centerY;
+class Particle {
+    constructor() { this.reset(); }
+    reset() {
+        this.x = (Math.random() - 0.5) * 2 * MAX_DEPTH;
+        this.y = (Math.random() - 0.5) * 2 * MAX_DEPTH;
+        this.z = Math.random() * MAX_DEPTH;
+        this.px = 0; this.py = 0;
+    }
+    update() {
+        this.z -= SPEED;
+        if (this.z <= 0) { this.reset(); }
+    }
+    draw() {
+        const scale = MAX_DEPTH / this.z;
+        const screenX = this.x * scale + centerX;
+        const screenY = this.y * scale + centerY;
+        const size = (1 - this.z / MAX_DEPTH) * 2.5;
+        const opacity = (1 - this.z / MAX_DEPTH) * 0.8;
+        if (this.px !== 0) {
+            ctx.beginPath();
+            ctx.moveTo(this.px, this.py);
+            ctx.lineTo(screenX, screenY);
+            ctx.strokeStyle = `rgba(${PARTICLE_COLOR}, ${opacity * 0.5})`;
+            ctx.lineWidth = size;
+            ctx.stroke();
+        }
+        this.px = screenX; this.py = screenY;
+    }
+}
+function setup() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    centerX = canvas.width / 2;
+    centerY = canvas.height / 2;
+    particles = [];
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+        particles.push(new Particle());
+    }
+}
+function animate() {
+    ctx.fillStyle = 'rgba(10, 10, 10, 0.4)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    centerX = canvas.width / 2 + (mouse.x - canvas.width / 2) * MOUSE_INFLUENCE;
+    centerY = canvas.height / 2 + (mouse.y - canvas.height / 2) * MOUSE_INFLUENCE;
+    for (const particle of particles) {
+        particle.update();
+        particle.draw();
+    }
+    requestAnimationFrame(animate);
+}
+window.addEventListener('resize', setup);
+window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+window.addEventListener('mouseout', () => { mouse.x = window.innerWidth / 2; mouse.y = window.innerHeight / 2; });
+setup();
+mouse.x = window.innerWidth / 2;
+mouse.y = window.innerHeight / 2;
+animate();
+// --- END OF COSMIC FIELD SCRIPT ---
+</script>
+</body>
+</html>
